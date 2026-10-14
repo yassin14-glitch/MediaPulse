@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Video Downloader</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-hover: #334155;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #60a5fa;
+        }
+
+        .logo p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .badge-ffmpeg {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            background: var(--surface);
+            padding: 6px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 16px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .tab-panel {
+            display: none;
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #0f172a;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+        }
+
+        button.btn-primary {
+            padding: 14px 24px;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button.btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .video-card {
+            background: #0f172a;
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            gap: 16px;
+            margin-top: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .video-card img {
+            width: 180px;
+            height: 105px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .video-details {
+            flex: 1;
+        }
+
+        .video-details h3 {
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+
+        .video-meta {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 16px;
+        }
+
+        select {
+            padding: 10px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .btn-download {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-download:hover {
+            opacity: 0.9;
+        }
+
+        .progress-box {
+            margin-top: 20px;
+            background: #0f172a;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            display: none;
+        }
+
+        .progress-bar-bg {
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .stream-card {
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stream-tag {
+            background: #1e3a8a;
+            color: #93c5fd;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+
+        .history-item {
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>⚡ Universal Video Downloader</h1>
+                <p>Download from YouTube or Any Website (TikTok, Vimeo, Twitter, Reddit, etc.)</p>
+            </div>
+            <div class="badge-ffmpeg" id="ffmpegBadge">FFmpeg: Checking...</div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('youtube')">📺 YouTube Downloader</button>
+            <button class="tab-btn" onclick="switchTab('web')">🌐 Any Website Downloader</button>
+            <button class="tab-btn" onclick="switchTab('history')">📁 Download History</button>
+        </div>
+
+        <!-- YouTube Tab -->
+        <div class="tab-panel active" id="tab-youtube">
+            <div class="input-group">
+                <input type="text" id="ytUrl" placeholder="Enter YouTube URL (e.g., https://www.youtube.com/watch?v=...)">
+                <button class="btn-primary" onclick="fetchYouTube()">🔍 Fetch Video</button>
+            </div>
+
+            <div id="ytPreview" style="display: none;">
+                <div class="video-card">
+                    <img id="ytThumb" src="" alt="Thumbnail">
+                    <div class="video-details">
+                        <h3 id="ytTitle">Video Title</h3>
+                        <div class="video-meta" id="ytMeta">Channel: -- | Duration: --</div>
+                        <div class="form-row">
+                            <select id="ytQuality">
+                                <option value="best">Best Quality (Auto)</option>
+                                <option value="1080p">1080p Full HD</option>
+                                <option value="720p">720p HD</option>
+                                <option value="480p">480p</option>
+                            </select>
+                            <select id="ytFormat">
+                                <option value="mp4">MP4 Video</option>
+                                <option value="mkv">MKV Video</option>
+                                <option value="mp3">MP3 Audio Only</option>
+                            </select>
+                            <button class="btn-download" onclick="downloadYouTube()">🚀 Download Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="progress-box" id="ytProgress">
+                <div id="ytStatus">Downloading...</div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="ytBar"></div>
+                </div>
+                <div class="progress-info">
+                    <span id="ytStats">0 MB / 0 MB</span>
+                    <span id="ytSpeedEta">Speed: -- | ETA: --</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Any Website Tab -->
+        <div class="tab-panel" id="tab-web">
+            <div class="input-group">
+                <input type="text" id="webUrl" placeholder="Enter any site URL (e.g. https://vimeo.com/... or TikTok, Twitter, Reddit, etc.)">
+                <button class="btn-primary" onclick="scanWeb()">🔍 Scan Videos</button>
+            </div>
+
+            <div id="webResultsInfo" style="margin-bottom: 12px; font-weight: 600; color: var(--text-muted);"></div>
+            <div id="webStreamsList"></div>
+
+            <div class="progress-box" id="webProgress">
+                <div id="webStatus">Downloading...</div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="webBar"></div>
+                </div>
+                <div class="progress-info">
+                    <span id="webStats">0 MB / 0 MB</span>
+                    <span id="webSpeedEta">Speed: -- | ETA: --</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Tab -->
+        <div class="tab-panel" id="tab-history">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 16px;">Downloaded Files</h3>
+                <button class="btn-primary" style="padding: 8px 16px;" onclick="loadHistory()">🔄 Refresh</button>
+            </div>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(name) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('tab-' + name).classList.add('active');
+
+            if (name === 'history') {
+                loadHistory();
+            }
+        }
+
+        // Check Status
+        fetch('/api/status')
+            .then(res => res.json())
+            .then(data => {
+                const b = document.getElementById('ffmpegBadge');
+                if (data.ffmpeg_available) {
+                    b.innerText = '✔️ FFmpeg 7.1 Active';
+                } else {
+                    b.innerText = '⚠️ FFmpeg Missing';
+                    b.style.background = 'rgba(239, 68, 68, 0.2)';
+                    b.style.color = '#f87171';
+                }
+            });
+
+        let currentYtData = null;
+
+        function fetchYouTube() {
+            const url = document.getElementById('ytUrl').value.trim();
+            if (!url) return alert('Please enter a YouTube URL');
+
+            document.getElementById('ytStatus').innerText = 'Fetching video info...';
+            fetch('/api/youtube/info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: url })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    currentYtData = res.data;
+                    document.getElementById('ytPreview').style.display = 'block';
+                    document.getElementById('ytThumb').src = res.data.thumbnail;
+                    document.getElementById('ytTitle').innerText = res.data.title;
+                    document.getElementById('ytMeta').innerText = `Channel: ${res.data.uploader || 'Unknown'} | Views: ${res.data.view_count?.toLocaleString() || '--'}`;
+                } else {
+                    alert('Failed to retrieve YouTube video details: ' + (res.detail || 'Unknown error'));
+                }
+            })
+            .catch(e => alert('Error: ' + e));
+        }
+
+        function downloadYouTube() {
+            const url = document.getElementById('ytUrl').value.trim();
+            const quality = document.getElementById('ytQuality').value;
+            const container = document.getElementById('ytFormat').value;
+            const mode = container === 'mp3' ? 'audio' : 'video';
+
+            document.getElementById('ytProgress').style.display = 'block';
+            
+            fetch('/api/download', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    url: url,
+                    mode: mode,
+                    quality: quality,
+                    container: container,
+                    title: currentYtData ? currentYtData.title : 'YouTube Video'
+                })
+            })
+            .then(r => r.json())
+            .then(res => {
+                trackProgress(res.task_id, 'yt');
+            });
+        }
+
+        function scanWeb() {
+            const url = document.getElementById('webUrl').value.trim();
+            if (!url) return alert('Please enter a website URL');
+
+            document.getElementById('webResultsInfo').innerText = '🔍 Scanning website for video sources...';
+            document.getElementById('webStreamsList').innerHTML = '';
+
+            fetch('/api/web/scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: url })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    const list = res.data.videos || [];
+                    document.getElementById('webResultsInfo').innerText = `Found ${list.length} video streams on page:`;
+                    
+                    if (list.length === 0) {
+                        document.getElementById('webStreamsList').innerHTML = '<p style="color: gray; padding: 20px 0;">No direct video streams discovered.</p>';
+                        return;
+                    }
+
+                    let html = '';
+                    list.forEach((vid, idx) => {
+                        html += `
+                            <div class="stream-card">
+                                <div>
+                                    <span class="stream-tag">${vid.type || 'Video'}</span>
+                                    <div style="font-weight: 600; font-size: 14px;">${vid.title || 'Video Stream #' + (idx+1)}</div>
+                                    <div style="font-size: 12px; color: var(--text-muted); word-break: break-all;">${(vid.url || '').substring(0, 90)}...</div>
+                                </div>
+                                <button class="btn-download" onclick="downloadWebStream('${encodeURIComponent(vid.url)}', '${encodeURIComponent(vid.title)}')">⬇️ Download</button>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('webStreamsList').innerHTML = html;
+                } else {
+                    alert('Error scanning website: ' + res.detail);
+                }
+            });
+        }
+
+        function downloadWebStream(encUrl, encTitle) {
+            const url = decodeURIComponent(encUrl);
+            const title = decodeURIComponent(encTitle);
+
+            document.getElementById('webProgress').style.display = 'block';
+
+            fetch('/api/download', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    url: url,
+                    mode: 'video',
+                    quality: 'best',
+                    container: 'mp4',
+                    title: title
+                })
+            })
+            .then(r => r.json())
+            .then(res => {
+                trackProgress(res.task_id, 'web');
+            });
+        }
+
+        function trackProgress(taskId, prefix) {
+            const interval = setInterval(() => {
+                fetch('/api/download/status/' + taskId)
+                    .then(r => r.json())
+                    .then(data => {
+                        const bar = document.getElementById(prefix + 'Bar');
+                        const status = document.getElementById(prefix + 'Status');
+                        const speed = document.getElementById(prefix + 'SpeedEta');
+                        const stats = document.getElementById(prefix + 'Stats');
+
+                        bar.style.width = (data.percent || 0) + '%';
+                        status.innerText = `Downloading: ${data.filename || ''} (${(data.percent || 0).toFixed(1)}%)`;
+                        speed.innerText = `${data.speed || '--'} | ETA: ${data.eta || '--'}`;
+                        if (stats) {
+                            stats.innerText = data.size || (data.downloaded + ' / ' + data.total);
+                        }
+
+                        if (data.status === 'completed') {
+                            clearInterval(interval);
+                            status.innerText = '🎉 Download Completed Successfully!';
+                            bar.style.width = '100%';
+                        } else if (data.status === 'error') {
+                            clearInterval(interval);
+                            status.innerText = '❌ Download Failed: ' + (data.result?.error || 'Unknown error');
+                        }
+                    });
+            }, 1000);
+        }
+
+        function loadHistory() {
+            fetch('/api/history')
+                .then(r => r.json())
+                .then(data => {
+                    const list = data.history || [];
+                    const container = document.getElementById('historyList');
+                    if (list.length === 0) {
+                        container.innerHTML = '<p style="color: gray; padding: 20px 0;">No downloads yet.</p>';
+                        return;
+                    }
+                    let html = '';
+                    list.forEach(item => {
+                        html += `
+                            <div class="history-item">
+                                <div>
+                                    <span class="stream-tag" style="background: ${item.source === 'YouTube' ? '#b91c1c' : '#1d4ed8'}">${item.source}</span>
+                                    <div style="font-weight: 600; font-size: 14px;">${item.title}</div>
+                                    <div style="font-size: 12px; color: var(--text-muted);">${item.format} • ${item.file_size} • ${item.timestamp}</div>
+                                </div>
+                                <div style="font-size: 12px; color: #34d399; font-weight: 600;">Saved</div>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                });
+        }
+    </script>
+</body>
+</html>
