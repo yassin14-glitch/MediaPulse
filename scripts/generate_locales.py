@@ -8,7 +8,6 @@ import os
 LOCALES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "locales")
 os.makedirs(LOCALES_DIR, exist_ok=True)
 
-# English base dictionary
 EN = {
     "app_name": "MediaPulse Pro",
     "nav_youtube": "YouTube Pro",
@@ -97,10 +96,27 @@ EN = {
     "welcome_feature2": "Instagram Reels, TikTok, Twitter/X with browser session support",
     "welcome_feature3": "Batch queue, video trimmer, SponsorBlock & multi-language",
     "btn_get_started": "Get Started",
-    "drop_overlay_text": "Drop Video Links Here to Download"
+    "drop_overlay_text": "Drop Video Links Here to Download",
+    "playlist_modal_title": "YouTube Playlist",
+    "playlist_detected_title": "Playlist Detected",
+    "playlist_detected_desc": "This link contains both a single video and a playlist. What would you like to download?",
+    "btn_single_video": "Single Video Only",
+    "btn_full_playlist": "Entire Playlist",
+    "playlist_select_all": "Select All",
+    "playlist_select_none": "Select None",
+    "playlist_range_label": "Select Range:",
+    "playlist_range_placeholder": "e.g. 1-10 or 5,8,12",
+    "playlist_btn_apply_range": "Apply Range",
+    "playlist_subfolder_label": "Save in subfolder named after playlist",
+    "playlist_prefix_index_label": "Prefix filenames with position number (e.g. 01 - Title)",
+    "playlist_btn_add_to_queue": "Add Selected to Queue",
+    "playlist_empty": "This playlist is empty or contains no accessible videos.",
+    "playlist_unavailable_video": "Unavailable (Private or deleted)",
+    "playlist_skipped_exists": "Already downloaded (skipped)",
+    "playlist_progress_label": "{index} of {total}",
+    "playlist_fetching": "Fetching playlist contents in flat mode..."
 }
 
-# Arabic (العربية) - Pure natural Arabic with RTL
 AR = {
     "app_name": "MediaPulse Pro",
     "nav_youtube": "YouTube الاحترافي",
@@ -189,10 +205,27 @@ AR = {
     "welcome_feature2": "تنزيل ريلز إنستغرام وتيك توك وتويتر مع دعم الحسابات",
     "welcome_feature3": "طابور تنزيل مجمع، أداة قص الفيديو، تخطي الإعلانات، ودعم لغات متعددة",
     "btn_get_started": "ابدأ الآن",
-    "drop_overlay_text": "أفلت روابط الفيديو هنا لبدء التنزيل"
+    "drop_overlay_text": "أفلت روابط الفيديو هنا لبدء التنزيل",
+    "playlist_modal_title": "قائمة تشغيل YouTube",
+    "playlist_detected_title": "تم اكتشاف قائمة تشغيل",
+    "playlist_detected_desc": "يحتوي هذا الرابط على فيديو مفرد وقائمة تشغيل معاً. ماذا تفضل أن تحمّل؟",
+    "btn_single_video": "هذا الفيديو فقط",
+    "btn_full_playlist": "قائمة التشغيل بالكامل",
+    "playlist_select_all": "تحديد الكل",
+    "playlist_select_none": "إلغاء التحديد",
+    "playlist_range_label": "تحديد نطاق:",
+    "playlist_range_placeholder": "مثال: 1-10 أو 5,8,12",
+    "playlist_btn_apply_range": "تطبيق النطاق",
+    "playlist_subfolder_label": "حفظ في مجلد فرعي باسم قائمة التشغيل",
+    "playlist_prefix_index_label": "ترقيم أسماء الملفات حسب الترتيب (مثال: 01 - العنوان)",
+    "playlist_btn_add_to_queue": "إضافة الفيديوهات المحددة إلى قائمة الانتظار",
+    "playlist_empty": "قائمة التشغيل هذه فارغة أو لا تحتوي على مقاطع فيديو متاحة.",
+    "playlist_unavailable_video": "غير متاح (خاص أو محذوف)",
+    "playlist_skipped_exists": "تم تنزيله مسبقاً (تم التخطي)",
+    "playlist_progress_label": "{index} من {total}",
+    "playlist_fetching": "جاري جلب محتويات قائمة التشغيل بسرعة..."
 }
 
-# French (Français)
 FR = {
     "app_name": "MediaPulse Pro",
     "nav_youtube": "YouTube Pro",
@@ -281,10 +314,27 @@ FR = {
     "welcome_feature2": "Instagram Reels, TikTok, Twitter/X avec session de navigateur",
     "welcome_feature3": "File d'attente, découpage vidéo, SponsorBlock et multilingue",
     "btn_get_started": "Commencer",
-    "drop_overlay_text": "Glissez les liens vidéo ici pour télécharger"
+    "drop_overlay_text": "Glissez les liens vidéo ici pour télécharger",
+    "playlist_modal_title": "Liste de lecture YouTube",
+    "playlist_detected_title": "Liste de lecture détectée",
+    "playlist_detected_desc": "Ce lien contient à la fois une vidéo unique et une liste de lecture. Que souhaitez-vous télécharger ?",
+    "btn_single_video": "Cette vidéo uniquement",
+    "btn_full_playlist": "Toute la liste de lecture",
+    "playlist_select_all": "Tout sélectionner",
+    "playlist_select_none": "Tout désélectionner",
+    "playlist_range_label": "Sélectionner une plage :",
+    "playlist_range_placeholder": "ex. 1-10 ou 5,8,12",
+    "playlist_btn_apply_range": "Appliquer la plage",
+    "playlist_subfolder_label": "Enregistrer dans un sous-dossier au nom de la liste",
+    "playlist_prefix_index_label": "Préfixer les noms de fichiers par le numéro (ex. 01 - Titre)",
+    "playlist_btn_add_to_queue": "Ajouter la sélection à la file",
+    "playlist_empty": "Cette liste de lecture est vide ou ne contient aucune vidéo accessible.",
+    "playlist_unavailable_video": "Indisponible (Privée ou supprimée)",
+    "playlist_skipped_exists": "Déjà téléchargé (ignoré)",
+    "playlist_progress_label": "{index} sur {total}",
+    "playlist_fetching": "Récupération du contenu de la liste..."
 }
 
-# Spanish (Español)
 ES = {
     "app_name": "MediaPulse Pro",
     "nav_youtube": "YouTube Pro",
@@ -373,10 +423,27 @@ ES = {
     "welcome_feature2": "Instagram Reels, TikTok, Twitter/X con soporte de sesión de navegador",
     "welcome_feature3": "Cola de descargas, recorte de video, SponsorBlock y soporte multiidioma",
     "btn_get_started": "Comenzar",
-    "drop_overlay_text": "Arrastra los enlaces de video aquí para descargar"
+    "drop_overlay_text": "Arrastra los enlaces de video aquí para descargar",
+    "playlist_modal_title": "Lista de reproducción de YouTube",
+    "playlist_detected_title": "Lista de reproducción detectada",
+    "playlist_detected_desc": "Este enlace contiene un video individual y una lista de reproducción. ¿Qué deseas descargar?",
+    "btn_single_video": "Solo este video",
+    "btn_full_playlist": "Lista de reproducción completa",
+    "playlist_select_all": "Seleccionar todo",
+    "playlist_select_none": "Deseleccionar todo",
+    "playlist_range_label": "Seleccionar rango:",
+    "playlist_range_placeholder": "ej. 1-10 o 5,8,12",
+    "playlist_btn_apply_range": "Aplicar rango",
+    "playlist_subfolder_label": "Guardar en subcarpeta con el nombre de la lista",
+    "playlist_prefix_index_label": "Prefijar nombres con número de posición (ej. 01 - Título)",
+    "playlist_btn_add_to_queue": "Añadir seleccionados a la cola",
+    "playlist_empty": "Esta lista de reproducción está vacía o no contiene videos disponibles.",
+    "playlist_unavailable_video": "No disponible (Privado o eliminado)",
+    "playlist_skipped_exists": "Ya descargado (omitido)",
+    "playlist_progress_label": "{index} de {total}",
+    "playlist_fetching": "Obteniendo contenido de la lista..."
 }
 
-# German (Deutsch)
 DE = {
     "app_name": "MediaPulse Pro",
     "nav_youtube": "YouTube Pro",
@@ -465,10 +532,27 @@ DE = {
     "welcome_feature2": "Instagram Reels, TikTok, Twitter/X mit nativer Browsersitzung",
     "welcome_feature3": "Stapel-Warteschlange, Videoschnitt, SponsorBlock & Mehrsprachigkeit",
     "btn_get_started": "Loslegen",
-    "drop_overlay_text": "Videolinks hier ablegen zum Herunterladen"
+    "drop_overlay_text": "Videolinks hier ablegen zum Herunterladen",
+    "playlist_modal_title": "YouTube-Wiedergabeliste",
+    "playlist_detected_title": "Wiedergabeliste erkannt",
+    "playlist_detected_desc": "Dieser Link enthält sowohl ein einzelnes Video als auch eine Wiedergabeliste. Was möchten Sie herunterladen?",
+    "btn_single_video": "Nur dieses Video",
+    "btn_full_playlist": "Gesamte Wiedergabeliste",
+    "playlist_select_all": "Alle auswählen",
+    "playlist_select_none": "Keine auswählen",
+    "playlist_range_label": "Bereich auswählen:",
+    "playlist_range_placeholder": "z.B. 1-10 oder 5,8,12",
+    "playlist_btn_apply_range": "Bereich anwenden",
+    "playlist_subfolder_label": "In Unterordner mit dem Namen der Playlist speichern",
+    "playlist_prefix_index_label": "Dateinamen mit Positionsnummer versehen (z.B. 01 - Titel)",
+    "playlist_btn_add_to_queue": "Ausgewählte zur Warteschlange hinzufügen",
+    "playlist_empty": "Diese Wiedergabeliste ist leer oder enthält keine zugänglichen Videos.",
+    "playlist_unavailable_video": "Nicht verfügbar (Privat oder gelöscht)",
+    "playlist_skipped_exists": "Bereits heruntergeladen (übersprungen)",
+    "playlist_progress_label": "{index} von {total}",
+    "playlist_fetching": "Inhalte der Wiedergabeliste werden abgerufen..."
 }
 
-# Portuguese (Português)
 PT = {
     "app_name": "MediaPulse Pro",
     "nav_youtube": "YouTube Pro",
@@ -557,10 +641,27 @@ PT = {
     "welcome_feature2": "Instagram Reels, TikTok, Twitter/X com integração de sessão",
     "welcome_feature3": "Fila de downloads, corte de vídeo, SponsorBlock e suporte multilíngue",
     "btn_get_started": "Começar",
-    "drop_overlay_text": "Solte os links de vídeo aqui para baixar"
+    "drop_overlay_text": "Solte os links de vídeo aqui para baixar",
+    "playlist_modal_title": "Lista de reprodução do YouTube",
+    "playlist_detected_title": "Lista de reprodução detectada",
+    "playlist_detected_desc": "Este link contém um vídeo individual e uma lista de reprodução. O que deseja baixar?",
+    "btn_single_video": "Apenas este vídeo",
+    "btn_full_playlist": "Toda a lista de reprodução",
+    "playlist_select_all": "Selecionar tudo",
+    "playlist_select_none": "Desmarcar tudo",
+    "playlist_range_label": "Selecionar intervalo:",
+    "playlist_range_placeholder": "ex.: 1-10 ou 5,8,12",
+    "playlist_btn_apply_range": "Aplicar intervalo",
+    "playlist_subfolder_label": "Salvar em subpasta com o nome da lista",
+    "playlist_prefix_index_label": "Prefixar arquivos com número de posição (ex.: 01 - Título)",
+    "playlist_btn_add_to_queue": "Adicionar selecionados à fila",
+    "playlist_empty": "Esta lista de reprodução está vazia ou não possui vídeos disponíveis.",
+    "playlist_unavailable_video": "Indisponível (Privado ou excluído)",
+    "playlist_skipped_exists": "Já baixado (ignorado)",
+    "playlist_progress_label": "{index} de {total}",
+    "playlist_fetching": "Carregando conteúdos da lista de reprodução..."
 }
 
-# Turkish (Türkçe)
 TR = {
     "app_name": "MediaPulse Pro",
     "nav_youtube": "YouTube Pro",
@@ -649,10 +750,27 @@ TR = {
     "welcome_feature2": "Instagram Reels, TikTok, Twitter/X için tarayıcı oturum desteği",
     "welcome_feature3": "Toplu kuyruk, video kırpıcı, SponsorBlock ve çoklu dil desteği",
     "btn_get_started": "Başla",
-    "drop_overlay_text": "İndirmek için video bağlantılarını buraya bırakın"
+    "drop_overlay_text": "İndirmek için video bağlantılarını buraya bırakın",
+    "playlist_modal_title": "YouTube Oynatma Listesi",
+    "playlist_detected_title": "Oynatma Listesi Algılandı",
+    "playlist_detected_desc": "Bu bağlantı hem tek bir video hem de bir oynatma listesi içeriyor. Hangisini indirmek istersiniz?",
+    "btn_single_video": "Yalnızca Bu Video",
+    "btn_full_playlist": "Tüm Oynatma Listesi",
+    "playlist_select_all": "Tümünü Seç",
+    "playlist_select_none": "Seçimi Kaldır",
+    "playlist_range_label": "Aralık Seç:",
+    "playlist_range_placeholder": "örn. 1-10 veya 5,8,12",
+    "playlist_btn_apply_range": "Aralığı Uygula",
+    "playlist_subfolder_label": "Oynatma listesi adında alt klasöre kaydet",
+    "playlist_prefix_index_label": "Dosya adlarına sıra numarası ekle (örn. 01 - Başlık)",
+    "playlist_btn_add_to_queue": "Seçilenleri Kuyruğa Ekle",
+    "playlist_empty": "Bu oynatma listesi boş veya erişilebilir video içermiyor.",
+    "playlist_unavailable_video": "Kullanılamıyor (Özel veya silinmiş)",
+    "playlist_skipped_exists": "Zaten indirildi (atlandı)",
+    "playlist_progress_label": "{index} / {total}",
+    "playlist_fetching": "Oynatma listesi içeriği alınıyor..."
 }
 
-# Russian (Русский)
 RU = {
     "app_name": "MediaPulse Pro",
     "nav_youtube": "YouTube Pro",
@@ -741,10 +859,27 @@ RU = {
     "welcome_feature2": "Instagram Reels, TikTok, Twitter/X с сессиями браузера",
     "welcome_feature3": "Очередь загрузок, обрезка видео, SponsorBlock и мультиязычность",
     "btn_get_started": "Начать работу",
-    "drop_overlay_text": "Перетащите ссылки на видео сюда для загрузки"
+    "drop_overlay_text": "Перетащите ссылки на видео сюда для загрузки",
+    "playlist_modal_title": "Плейлист YouTube",
+    "playlist_detected_title": "Обнаружен плейлист",
+    "playlist_detected_desc": "Эта ссылка содержит как отдельное видео, так и плейлист. Что вы хотите скачать?",
+    "btn_single_video": "Только это видео",
+    "btn_full_playlist": "Весь плейлист",
+    "playlist_select_all": "Выбрать все",
+    "playlist_select_none": "Снять выбор",
+    "playlist_range_label": "Выбрать диапазон:",
+    "playlist_range_placeholder": "например, 1-10 или 5,8,12",
+    "playlist_btn_apply_range": "Применить диапазон",
+    "playlist_subfolder_label": "Сохранять в подпапку с названием плейлиста",
+    "playlist_prefix_index_label": "Добавлять порядковый номер к именам файлов (напр. 01 - Название)",
+    "playlist_btn_add_to_queue": "Добавить выбранные в очередь",
+    "playlist_empty": "Этот плейлист пуст или не содержит доступных видео.",
+    "playlist_unavailable_video": "Недоступно (Приватное или удалено)",
+    "playlist_skipped_exists": "Уже скачано (пропущено)",
+    "playlist_progress_label": "{index} из {total}",
+    "playlist_fetching": "Получение содержимого плейлиста..."
 }
 
-# Chinese Simplified (简体中文)
 ZH = {
     "app_name": "MediaPulse Pro",
     "nav_youtube": "YouTube 专业版",
@@ -833,10 +968,27 @@ ZH = {
     "welcome_feature2": "完美兼容 Instagram Reels、TikTok、Twitter/X 浏览器认证",
     "welcome_feature3": "批量任务管理、时间片段裁剪、跳过赞助广告与全语言适配",
     "btn_get_started": "立即开启",
-    "drop_overlay_text": "将视频链接拖放至此处即可开始下载"
+    "drop_overlay_text": "将视频链接拖放至此处即可开始下载",
+    "playlist_modal_title": "YouTube 播放列表",
+    "playlist_detected_title": "检测到播放列表",
+    "playlist_detected_desc": "此链接既包含单个视频也包含播放列表。您想要下载什么？",
+    "btn_single_video": "仅下载此视频",
+    "btn_full_playlist": "下载完整播放列表",
+    "playlist_select_all": "全选",
+    "playlist_select_none": "取消全选",
+    "playlist_range_label": "选择范围：",
+    "playlist_range_placeholder": "例如 1-10 或 5,8,12",
+    "playlist_btn_apply_range": "应用范围",
+    "playlist_subfolder_label": "保存在以播放列表命名的子文件夹中",
+    "playlist_prefix_index_label": "在文件名前添加序号（例如 01 - 标题）",
+    "playlist_btn_add_to_queue": "添加所选到下载队列",
+    "playlist_empty": "此播放列表为空或不包含可访问的视频。",
+    "playlist_unavailable_video": "不可用（私享或已删除）",
+    "playlist_skipped_exists": "已下载（已跳过）",
+    "playlist_progress_label": "第 {index} 个，共 {total} 个",
+    "playlist_fetching": "正在快速获取播放列表内容..."
 }
 
-# Japanese (日本語)
 JA = {
     "app_name": "MediaPulse Pro",
     "nav_youtube": "YouTube Pro",
@@ -925,10 +1077,27 @@ JA = {
     "welcome_feature2": "Instagram Reels、TikTok、Twitter/X のセッション連携ダウンロード",
     "welcome_feature3": "一括キュー、動画トリミング、広告スキップ、多言語対応",
     "btn_get_started": "はじめる",
-    "drop_overlay_text": "動画リンクをここにドロップしてダウンロード"
+    "drop_overlay_text": "動画リンクをここにドロップしてダウンロード",
+    "playlist_modal_title": "YouTube 再生リスト",
+    "playlist_detected_title": "再生リストを検出",
+    "playlist_detected_desc": "このリンクには単一の動画と再生リストの両方が含まれています。どちらをダウンロードしますか？",
+    "btn_single_video": "この動画のみ",
+    "btn_full_playlist": "再生リスト全体",
+    "playlist_select_all": "すべて選択",
+    "playlist_select_none": "選択解除",
+    "playlist_range_label": "範囲を選択:",
+    "playlist_range_placeholder": "例: 1-10 または 5,8,12",
+    "playlist_btn_apply_range": "範囲を適用",
+    "playlist_subfolder_label": "再生リスト名のサブフォルダーに保存",
+    "playlist_prefix_index_label": "ファイル名の先頭に連番を付ける（例: 01 - タイトル）",
+    "playlist_btn_add_to_queue": "選択項目をキューに追加",
+    "playlist_empty": "この再生リストは空であるか、アクセス可能な動画がありません。",
+    "playlist_unavailable_video": "利用不可（非公開または削除済み）",
+    "playlist_skipped_exists": "既にダウンロード済み（スキップ）",
+    "playlist_progress_label": "{index} / {total}",
+    "playlist_fetching": "再生リストの内容を取得中..."
 }
 
-# Hindi (हिन्दी)
 HI = {
     "app_name": "MediaPulse Pro",
     "nav_youtube": "YouTube प्रो",
@@ -1017,10 +1186,27 @@ HI = {
     "welcome_feature2": "Instagram Reels, TikTok, Twitter/X ब्राउज़र सत्र समर्थन",
     "welcome_feature3": "बैच कतार, वीडियो ट्रिमर, SponsorBlock और बहुभाषी समर्थन",
     "btn_get_started": "शुरू करें",
-    "drop_overlay_text": "डाउनलोड करने के लिए वीडियो लिंक यहाँ छोड़ें"
+    "drop_overlay_text": "डाउनलोड करने के लिए वीडियो लिंक यहाँ छोड़ें",
+    "playlist_modal_title": "YouTube प्लेलिस्ट",
+    "playlist_detected_title": "प्लेलिस्ट का पता चला",
+    "playlist_detected_desc": "इस लिंक में एक एकल वीडियो और प्लेलिस्ट दोनों शामिल हैं। आप क्या डाउनलोड करना चाहते हैं?",
+    "btn_single_video": "केवल यह वीडियो",
+    "btn_full_playlist": "पूरी प्लेलिस्ट",
+    "playlist_select_all": "सभी चुनें",
+    "playlist_select_none": "कोई नहीं चुनें",
+    "playlist_range_label": "रेंज चुनें:",
+    "playlist_range_placeholder": "उदा. 1-10 या 5,8,12",
+    "playlist_btn_apply_range": "रेंज लागू करें",
+    "playlist_subfolder_label": "प्लेलिस्ट के नाम वाले फ़ोल्डर में सहेजें",
+    "playlist_prefix_index_label": "फ़ाइलों के नाम में क्रम संख्या जोड़ें (उदा. 01 - शीर्षक)",
+    "playlist_btn_add_to_queue": "चयनित को कतार में जोड़ें",
+    "playlist_empty": "यह प्लेलिस्ट खाली है या इसमें कोई सुलभ वीडियो नहीं है।",
+    "playlist_unavailable_video": "अनुपलब्ध (निजी या हटाया गया)",
+    "playlist_skipped_exists": "पहले ही डाउनलोड किया गया (छोड़ा गया)",
+    "playlist_progress_label": "{index} / {total}",
+    "playlist_fetching": "प्लेलिस्ट सामग्री लोड हो रही है..."
 }
 
-# Indonesian (Bahasa Indonesia)
 ID = {
     "app_name": "MediaPulse Pro",
     "nav_youtube": "YouTube Pro",
@@ -1109,10 +1295,29 @@ ID = {
     "welcome_feature2": "Instagram Reels, TikTok, Twitter/X dengan sesi peramban",
     "welcome_feature3": "Antrean batch, pemangkas video, SponsorBlock & multi-bahasa",
     "btn_get_started": "Mulai",
-    "drop_overlay_text": "Tarik tautan video ke sini untuk mengunduh"
+    "drop_overlay_text": "Tarik tautan video ke sini untuk mengunduh",
+    "playlist_modal_title": "Daftar Putar YouTube",
+    "playlist_detected_title": "Daftar Putar Terdeteksi",
+    "playlist_detected_desc": "Tautan ini berisi video tunggal dan daftar putar. Apa yang ingin Anda unduh?",
+    "btn_single_video": "Hanya Video Ini",
+    "btn_full_playlist": "Seluruh Daftar Putar",
+    "playlist_select_all": "Pilih Semua",
+    "playlist_select_none": "Hapus Semua Pilihan",
+    "playlist_range_label": "Pilih Rentang:",
+    "playlist_range_placeholder": "contoh: 1-10 atau 5,8,12",
+    "playlist_btn_apply_range": "Terapkan Rentang",
+    "playlist_subfolder_label": "Simpan di subfolder bernama daftar putar",
+    "playlist_prefix_index_label": "Beri awalan nomor urut pada nama berkas (contoh: 01 - Judul)",
+    "playlist_btn_add_to_queue": "Tambahkan Pilihan ke Antrean",
+    "playlist_empty": "Daftar putar ini kosong atau tidak memiliki video yang dapat diakses.",
+    "playlist_unavailable_video": "Tidak tersedia (Pribadi atau dihapus)",
+    "playlist_skipped_exists": "Sudah diunduh (dilewati)",
+    "playlist_progress_label": "{index} dari {total}",
+    "playlist_fetching": "Mengambil konten daftar putar..."
 }
 
-ALL_LANGS = {
+
+ALL_LOCALES = {
     "en": EN,
     "ar": AR,
     "fr": FR,
@@ -1124,42 +1329,15 @@ ALL_LANGS = {
     "zh": ZH,
     "ja": JA,
     "hi": HI,
-    "id": ID,
+    "id": ID
 }
 
-def generate():
-    en_keys = set(EN.keys())
-    for code, data in ALL_LANGS.items():
-        # Verify key completeness
-        missing = en_keys - set(data.keys())
-        if missing:
-            print(f"[WARN] {code} missing keys: {missing}")
-            for m in missing:
-                data[m] = EN[m]
-
+def generate_locales():
+    for code, data in ALL_LOCALES.items():
         out_path = os.path.join(LOCALES_DIR, f"{code}.json")
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
-        print(f"[OK] Wrote {code}.json ({len(data)} keys)")
-
-    # Also write a manifest.json describing the available languages
-    manifest = [
-        {"code": "en", "name": "English", "native": "English", "dir": "ltr"},
-        {"code": "ar", "name": "Arabic", "native": "العربية", "dir": "rtl"},
-        {"code": "fr", "name": "French", "native": "Français", "dir": "ltr"},
-        {"code": "es", "name": "Spanish", "native": "Español", "dir": "ltr"},
-        {"code": "de", "name": "German", "native": "Deutsch", "dir": "ltr"},
-        {"code": "pt", "name": "Portuguese", "native": "Português", "dir": "ltr"},
-        {"code": "tr", "name": "Turkish", "native": "Türkçe", "dir": "ltr"},
-        {"code": "ru", "name": "Russian", "native": "Русский", "dir": "ltr"},
-        {"code": "zh", "name": "Chinese (Simplified)", "native": "简体中文", "dir": "ltr"},
-        {"code": "ja", "name": "Japanese", "native": "日本語", "dir": "ltr"},
-        {"code": "hi", "name": "Hindi", "native": "हिन्दी", "dir": "ltr"},
-        {"code": "id", "name": "Indonesian", "native": "Bahasa Indonesia", "dir": "ltr"},
-    ]
-    with open(os.path.join(LOCALES_DIR, "manifest.json"), "w", encoding="utf-8") as f:
-        json.dump(manifest, f, ensure_ascii=False, indent=2)
-    print(f"[OK] Wrote manifest.json with {len(manifest)} languages")
+        print(f"[OK] Generated {code}.json ({len(data)} strings)")
 
 if __name__ == "__main__":
-    generate()
+    generate_locales()

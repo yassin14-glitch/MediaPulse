@@ -13,6 +13,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - **Throttled Progress Reporting**: Rate-limited UI hook updates to 120ms intervals, eliminating CPU spikes and UI flooding during multi-megabyte/second transfers.
 - **Automatic Resume & Connection Recovery**: Increased retry and fragment retry tolerance to 10 attempts with automatic partial fragment continuation (`continuedl`).
 
+### 📺 Full YouTube Playlist Engine
+- **Flat-Mode Fast Extraction**: Instant metadata loading for playlists with several hundred videos without freezing the UI.
+- **Scrollable Checklist with Thumbnails & Durations**: Displays thumbnail, title, uploader, and duration for every item.
+- **Select All / Select None & Range Selector**: Flexible item selection including custom range queries (e.g. `1-10` or `5,8,12`).
+- **Single-Video-in-Playlist Link Prompt**: Detects combined URLs (`watch?v=...&list=...`) and asks user whether to download the single video or entire playlist.
+- **Subfolder Organization & Position Prefixing**: Automatically saves playlist videos into dedicated subfolders and optionally prefixes filenames with their index (`01 - Title.mp4`).
+- **Resumption & Unavailable Video Handling**: Skips already downloaded videos instantaneously so interrupted playlists can resume without re-downloading; cleanly skips private, deleted, or region-blocked videos with short human messages without halting the queue.
+- **Queue Progress Integration**: Displays overall playlist progress (e.g. `7 of 32`) next to each task's progress bar.
+
 ### 🌐 Complete Internationalization (i18n)
 - Native translations across **12 languages**:
   - English (`en`)

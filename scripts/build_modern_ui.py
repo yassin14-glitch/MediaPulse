@@ -814,9 +814,9 @@ HTML_CONTENT = r'''<!DOCTYPE html>
 
                     <div class="url-input-container">
                         <span class="url-icon">🔗</span>
-                        <input id="ytUrlInput" type="text" class="url-input" data-i18n-ph="input_placeholder_yt" placeholder="Paste YouTube video, playlist, or Short URL..." onkeydown="if(event.key==='Enter') fetchYoutubePreview()">
+                        <input id="ytUrlInput" type="text" class="url-input" data-i18n-ph="input_placeholder_yt" placeholder="Paste YouTube video, playlist, or Short URL..." onkeydown="if(event.key==='Enter') handleYoutubeInput()" onpaste="setTimeout(handleYoutubeInput, 120)">
                         <div class="url-actions">
-                            <button class="btn-input-action" onclick="fetchYoutubePreview()" data-i18n="btn_preview">Preview</button>
+                            <button class="btn-input-action" onclick="handleYoutubeInput()" data-i18n="btn_preview">Preview</button>
                             <button class="btn-input-action" onclick="openBatchModal()" data-i18n="btn_batch">Batch</button>
                         </div>
                     </div>
@@ -1135,6 +1135,98 @@ HTML_CONTENT = r'''<!DOCTYPE html>
         </div>
     </div>
 
+    <!-- MODAL 4: PLAYLIST CHOICE MODAL -->
+    <div id="playlistChoiceModal" class="modal-backdrop">
+        <div class="modal-box" style="text-align: center; max-width: 480px;">
+            <div style="font-size: 38px; margin-bottom: 12px;">📑</div>
+            <div class="modal-title" style="margin-bottom: 8px;" data-i18n="playlist_detected_title">Playlist Detected</div>
+            <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 22px; line-height: 1.6;" data-i18n="playlist_detected_desc">
+                This link contains both a single video and a playlist. What would you like to download?
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button class="btn-pill" style="padding: 10px 18px;" onclick="chooseSingleVideo()" data-i18n="btn_single_video">Single Video Only</button>
+                <button class="btn-pill success" style="padding: 10px 18px;" onclick="chooseFullPlaylist()" data-i18n="btn_full_playlist">Entire Playlist</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: FULL PLAYLIST MODAL -->
+    <div id="playlistModal" class="modal-backdrop">
+        <div class="modal-box" style="width: 860px; max-width: 95vw; max-height: 88vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" id="playlistModalTitle" data-i18n="playlist_modal_title">YouTube Playlist</div>
+                    <div id="playlistModalSubtitle" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Loading contents...</div>
+                </div>
+                <button class="close-btn" onclick="closePlaylistModal()">×</button>
+            </div>
+
+            <!-- Playlist Options Toolbar -->
+            <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+                <!-- Selection Actions -->
+                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                    <button class="btn-pill" style="font-size: 11px; padding: 4px 10px;" onclick="selectAllPlaylist(true)" data-i18n="playlist_select_all">Select All</button>
+                    <button class="btn-pill" style="font-size: 11px; padding: 4px 10px;" onclick="selectAllPlaylist(false)" data-i18n="playlist_select_none">Select None</button>
+                    <div style="display: flex; align-items: center; gap: 4px; margin-left: 6px;">
+                        <span style="font-size: 11px; color: var(--text-muted);" data-i18n="playlist_range_label">Select Range:</span>
+                        <input id="playlistRangeInput" type="text" class="select-dark" style="width: 120px; font-size: 11px; padding: 4px 8px;" placeholder="1-10 or 5,8,12" data-i18n-ph="playlist_range_placeholder">
+                        <button class="btn-pill" style="font-size: 11px; padding: 4px 8px;" onclick="applyPlaylistRange()" data-i18n="playlist_btn_apply_range">Apply</button>
+                    </div>
+                </div>
+
+                <!-- Quality & Format -->
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <select id="playlistQualitySelect" class="select-dark" style="font-size: 12px; padding: 4px 8px;">
+                        <option value="best" data-i18n="preset_best">Best Available</option>
+                        <option value="1080p">1080p Full HD</option>
+                        <option value="720p">720p HD</option>
+                        <option value="480p">480p</option>
+                        <option value="360p">360p</option>
+                    </select>
+                    <select id="playlistFormatSelect" class="select-dark" style="font-size: 12px; padding: 4px 8px;">
+                        <option value="mp4">MP4 Video</option>
+                        <option value="mkv">MKV Video</option>
+                        <option value="webm">WEBM Video</option>
+                        <option value="mp3">MP3 320k Audio</option>
+                        <option value="m4a">M4A Audio</option>
+                        <option value="flac">FLAC Lossless</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Toggles (Subfolder & Prefix) -->
+            <div style="display: flex; gap: 20px; font-size: 12px; margin-bottom: 12px; flex-wrap: wrap;">
+                <label class="toggle-label" style="margin: 0; cursor: pointer;">
+                    <input type="checkbox" id="chkPlaylistSubfolder" checked>
+                    <span data-i18n="playlist_subfolder_label">Save in subfolder named after playlist</span>
+                </label>
+                <label class="toggle-label" style="margin: 0; cursor: pointer;">
+                    <input type="checkbox" id="chkPlaylistPrefixIndex" checked>
+                    <span data-i18n="playlist_prefix_index_label">Prefix filenames with position number (e.g. 01 - Title)</span>
+                </label>
+            </div>
+
+            <!-- Video Items Scrollable List -->
+            <div id="playlistItemsContainer" style="flex: 1; overflow-y: auto; max-height: 420px; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;">
+                <div style="text-align: center; color: #60a5fa; padding: 30px;">
+                    <div style="font-size: 28px; margin-bottom: 8px;">⏳</div>
+                    <div data-i18n="playlist_fetching">Fetching playlist contents in flat mode...</div>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px;">
+                <div id="playlistSelectionCount" style="font-size: 13px; color: #60a5fa; font-weight: 700;">
+                    Selected: 0 / 0
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-pill" onclick="closePlaylistModal()" data-i18n="btn_cancel">Cancel</button>
+                    <button id="btnQueuePlaylist" class="btn-pill success" onclick="submitPlaylistToQueue()" data-i18n="playlist_btn_add_to_queue">Add Selected to Queue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Global Application State
         let currentTab = 'youtube';
@@ -1149,6 +1241,10 @@ HTML_CONTENT = r'''<!DOCTYPE html>
         let activeTrimEnd = null;
         let currentAppConfig = {};
         let lastClipboardUrl = null;
+        let currentPlaylistEntries = [];
+        let currentPlaylistInfo = {};
+        let pendingSingleUrl = null;
+        let pendingPlaylistUrl = null;
 
         // Initialization
         window.addEventListener('DOMContentLoaded', () => {
@@ -1312,6 +1408,8 @@ HTML_CONTENT = r'''<!DOCTYPE html>
                     closeTrimModal();
                     closeBatchModal();
                     dismissWelcomeModal();
+                    closePlaylistChoiceModal();
+                    closePlaylistModal();
                 } else if (e.ctrlKey && e.key === ',') {
                     e.preventDefault();
                     switchTab('settings');
@@ -1363,6 +1461,235 @@ HTML_CONTENT = r'''<!DOCTYPE html>
             currentSelectedQuality = quality;
             currentSelectedFormat = format;
             document.getElementById('ytContainerSelect').value = format;
+        }
+
+        // --- YouTube URL Check & Playlist Interaction ---
+        async function handleYoutubeInput() {
+            const url = document.getElementById('ytUrlInput').value.trim();
+            if (!url) return;
+
+            try {
+                const chkRes = await fetch('/api/youtube/check-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                const chk = await chkRes.json();
+
+                if (chk.is_single_and_playlist) {
+                    pendingSingleUrl = chk.single_url;
+                    pendingPlaylistUrl = chk.playlist_url;
+                    openPlaylistChoiceModal();
+                    return;
+                } else if (chk.is_pure_playlist) {
+                    openPlaylistModal(chk.playlist_url || url);
+                    return;
+                }
+            } catch (e) {
+                console.error("Check URL error:", e);
+            }
+
+            // Standard single video preview
+            fetchYoutubePreview();
+        }
+
+        function openPlaylistChoiceModal() {
+            document.getElementById('playlistChoiceModal').classList.add('show');
+        }
+
+        function closePlaylistChoiceModal() {
+            document.getElementById('playlistChoiceModal').classList.remove('show');
+        }
+
+        function chooseSingleVideo() {
+            closePlaylistChoiceModal();
+            if (pendingSingleUrl) {
+                document.getElementById('ytUrlInput').value = pendingSingleUrl;
+            }
+            fetchYoutubePreview();
+        }
+
+        function chooseFullPlaylist() {
+            closePlaylistChoiceModal();
+            openPlaylistModal(pendingPlaylistUrl || document.getElementById('ytUrlInput').value.trim());
+        }
+
+        async function openPlaylistModal(playlistUrl) {
+            document.getElementById('playlistModal').classList.add('show');
+            const container = document.getElementById('playlistItemsContainer');
+            container.innerHTML = `
+                <div style="text-align: center; color: #60a5fa; padding: 35px;">
+                    <div style="font-size: 32px; margin-bottom: 10px;">⏳</div>
+                    <div>${t('playlist_fetching', 'Fetching playlist contents in flat mode...')}</div>
+                </div>
+            `;
+            document.getElementById('playlistModalSubtitle').innerText = "Loading contents...";
+            document.getElementById('playlistSelectionCount').innerText = "Selected: 0 / 0";
+            document.getElementById('btnQueuePlaylist').disabled = true;
+
+            try {
+                const res = await fetch('/api/youtube/playlist-info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: playlistUrl })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    container.innerHTML = `<div style="color: #f87171; padding: 25px; text-align: center;">⚠️ ${err.detail || 'Could not load playlist.'}</div>`;
+                    document.getElementById('playlistModalSubtitle').innerText = "Error loading playlist";
+                    return;
+                }
+
+                currentPlaylistInfo = await res.json();
+                currentPlaylistEntries = currentPlaylistInfo.entries || [];
+
+                document.getElementById('playlistModalTitle').innerText = currentPlaylistInfo.title || t('playlist_modal_title', 'YouTube Playlist');
+                document.getElementById('playlistModalSubtitle').innerText = `${currentPlaylistInfo.uploader || 'Creator'} • ${currentPlaylistEntries.length} videos`;
+
+                renderPlaylistItems(currentPlaylistEntries);
+                document.getElementById('btnQueuePlaylist').disabled = (currentPlaylistEntries.length === 0);
+            } catch (err) {
+                container.innerHTML = `<div style="color: #f87171; padding: 25px; text-align: center;">⚠️ ${err}</div>`;
+                document.getElementById('playlistModalSubtitle').innerText = "Connection error";
+            }
+        }
+
+        function closePlaylistModal() {
+            document.getElementById('playlistModal').classList.remove('show');
+        }
+
+        function renderPlaylistItems(entries) {
+            const container = document.getElementById('playlistItemsContainer');
+            if (!entries || entries.length === 0) {
+                container.innerHTML = `<div style="text-align: center; padding: 35px; color: var(--text-muted);">${t('playlist_empty', 'This playlist is empty or contains no accessible videos.')}</div>`;
+                updatePlaylistSelectionCount();
+                return;
+            }
+
+            let html = '';
+            entries.forEach((e) => {
+                const isAvail = (e.is_available !== false);
+                html += `
+                    <div class="stream-item" style="padding: 8px 12px; gap: 10px; align-items: center; opacity: ${isAvail ? '1' : '0.55'};">
+                        <input type="checkbox" class="playlist-item-checkbox" data-index="${e.index}" data-url="${e.url}" data-title="${encodeURIComponent(e.title)}" ${isAvail ? 'checked' : 'disabled'} onchange="updatePlaylistSelectionCount()" style="width: 16px; height: 16px; cursor: pointer;">
+                        <span class="badge" style="font-size: 10px; padding: 2px 6px;">#${e.index}</span>
+                        <img src="${e.thumbnail || ''}" style="width: 64px; height: 38px; object-fit: cover; border-radius: 4px; background: #1e293b;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'64\\' height=\\'38\\' fill=\\'%23334155\\'><rect width=\\'64\\' height=\\'38\\'/><text x=\\'50%25\\' y=\\'50%25\\' dominant-baseline=\\'middle\\' text-anchor=\\'middle\\' fill=\\'%2364748b\\' font-size=\\'10\\'>Video</text></svg>'">
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${e.title}">${e.title}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); display: flex; gap: 8px; margin-top: 2px;">
+                                <span>⏱️ ${e.duration_str || '--:--'}</span>
+                                <span>👤 ${e.uploader || ''}</span>
+                                ${!isAvail ? `<span style="color: #f87171; font-weight: bold;">⚠️ ${t('playlist_unavailable_video', 'Unavailable (Private or deleted)')}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            updatePlaylistSelectionCount();
+        }
+
+        function selectAllPlaylist(selectAll) {
+            const checkboxes = document.querySelectorAll('.playlist-item-checkbox:not(:disabled)');
+            checkboxes.forEach(cb => cb.checked = selectAll);
+            updatePlaylistSelectionCount();
+        }
+
+        function parseRangeString(str, maxCount) {
+            const selected = new Set();
+            if (!str) return selected;
+            const parts = str.split(',');
+            for (let part of parts) {
+                part = part.trim();
+                if (part.includes('-')) {
+                    const [sStr, eStr] = part.split('-');
+                    const s = parseInt(sStr, 10);
+                    const e = parseInt(eStr, 10);
+                    if (!isNaN(s) && !isNaN(e)) {
+                        for (let i = Math.min(s, e); i <= Math.max(s, e); i++) {
+                            if (i >= 1 && i <= maxCount) selected.add(i);
+                        }
+                    }
+                } else {
+                    const num = parseInt(part, 10);
+                    if (!isNaN(num) && num >= 1 && num <= maxCount) {
+                        selected.add(num);
+                    }
+                }
+            }
+            return selected;
+        }
+
+        function applyPlaylistRange() {
+            const rangeText = document.getElementById('playlistRangeInput').value.trim();
+            if (!rangeText) return;
+            const checkboxes = document.querySelectorAll('.playlist-item-checkbox:not(:disabled)');
+            const selectedIndices = parseRangeString(rangeText, currentPlaylistEntries.length);
+
+            checkboxes.forEach(cb => {
+                const idx = parseInt(cb.getAttribute('data-index'), 10);
+                cb.checked = selectedIndices.has(idx);
+            });
+            updatePlaylistSelectionCount();
+        }
+
+        function updatePlaylistSelectionCount() {
+            const allCheckboxes = document.querySelectorAll('.playlist-item-checkbox:not(:disabled)');
+            const checkedBoxes = document.querySelectorAll('.playlist-item-checkbox:checked');
+            const total = allCheckboxes.length;
+            const count = checkedBoxes.length;
+
+            const countEl = document.getElementById('playlistSelectionCount');
+            if (countEl) countEl.innerText = `Selected: ${count} / ${total}`;
+
+            const btn = document.getElementById('btnQueuePlaylist');
+            if (btn) {
+                btn.disabled = (count === 0);
+                btn.innerText = `${t('playlist_btn_add_to_queue', 'Add Selected to Queue')} (${count})`;
+            }
+        }
+
+        async function submitPlaylistToQueue() {
+            const checkedBoxes = document.querySelectorAll('.playlist-item-checkbox:checked');
+            if (checkedBoxes.length === 0) return;
+
+            const items = [];
+            checkedBoxes.forEach(cb => {
+                items.push({
+                    url: cb.getAttribute('data-url'),
+                    title: decodeURIComponent(cb.getAttribute('data-title')),
+                    index: parseInt(cb.getAttribute('data-index'), 10)
+                });
+            });
+
+            const format = document.getElementById('playlistFormatSelect').value;
+            const quality = document.getElementById('playlistQualitySelect').value;
+            const createSubfolder = document.getElementById('chkPlaylistSubfolder').checked;
+            const prefixIndex = document.getElementById('chkPlaylistPrefixIndex').checked;
+
+            try {
+                await fetch('/api/queue/add-playlist', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        playlist_id: currentPlaylistInfo.playlist_id,
+                        playlist_title: currentPlaylistInfo.title || 'Playlist',
+                        items: items,
+                        mode: (format === 'mp3' || format === 'm4a' || format === 'flac') ? 'audio' : 'video',
+                        quality: quality,
+                        container: format,
+                        create_subfolder: createSubfolder,
+                        prefix_index: prefixIndex
+                    })
+                });
+
+                closePlaylistModal();
+                switchTab('queue');
+                pollQueue();
+            } catch (err) {
+                alert("Error adding playlist to queue: " + err);
+            }
         }
 
         // --- YouTube Preview ---
@@ -1594,20 +1921,47 @@ HTML_CONTENT = r'''<!DOCTYPE html>
 
                 let html = '';
                 tasks.forEach((t, idx) => {
+                    const isPlaylist = Boolean(t.playlist_total);
+                    const playlistBadge = isPlaylist ? `
+                        <span class="badge" style="background: rgba(139, 92, 246, 0.2); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.4); font-size: 10px; margin-left: 6px;">
+                            📑 ${t.playlist_title || 'Playlist'} [${t.playlist_index}/${t.playlist_total}]
+                        </span>
+                    ` : '';
+
+                    let badgeColor = '';
+                    if (t.state === 'completed') badgeColor = 'accent';
+                    else if (t.state === 'skipped') badgeColor = 'warning';
+                    else if (t.state === 'error') badgeColor = 'danger';
+
                     html += `
                         <div class="stream-item" id="task-${t.id}">
-                            <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
                                 <div style="display: flex; flex-direction: column; gap: 2px;">
                                     <button class="btn-pill" style="padding: 2px 6px; font-size: 9px;" onclick="moveTask('${t.id}', -1)">▲</button>
                                     <button class="btn-pill" style="padding: 2px 6px; font-size: 9px;" onclick="moveTask('${t.id}', 1)">▼</button>
                                 </div>
-                                <div>
-                                    <span class="badge ${t.state === 'completed' ? 'accent' : ''}">${t.state.toUpperCase()}</span>
-                                    <div style="font-weight: 700; font-size: 13px; margin-top: 4px;">${t.title}</div>
-                                    <div style="font-size: 11px; color: var(--text-muted);">${t.size} • ${t.speed}</div>
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <span class="badge ${badgeColor}">${t.state.toUpperCase()}</span>
+                                        ${playlistBadge}
+                                    </div>
+                                    <div style="font-weight: 700; font-size: 13px; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${t.title}">${t.title}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted); display: flex; gap: 10px; margin-top: 2px; align-items: center;">
+                                        <span>${t.size} • ${t.speed}</span>
+                                        ${isPlaylist ? `<span style="color: #60a5fa; font-weight: 700;">📊 ${t.playlist_index} of ${t.playlist_total}</span>` : ''}
+                                        ${t.error ? `<span style="color: #f87171;">⚠️ ${t.error}</span>` : ''}
+                                    </div>
+                                    ${t.state === 'downloading' ? `
+                                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+                                            <div class="progress-track" style="flex: 1; height: 5px; margin: 0;">
+                                                <div class="progress-fill" style="width: ${Math.min(t.percent || 0, 100)}%;"></div>
+                                            </div>
+                                            <span style="font-size: 10px; color: #60a5fa; min-width: 38px;">${(t.percent || 0).toFixed(1)}%</span>
+                                        </div>
+                                    ` : ''}
                                 </div>
                             </div>
-                            <div style="display: flex; gap: 6px;">
+                            <div style="display: flex; gap: 6px; margin-left: 8px;">
                                 ${t.state === 'paused' ? `<button class="btn-pill" onclick="resumeQueueTask('${t.id}')">▶ Resume</button>` : ''}
                                 ${t.state === 'downloading' ? `<button class="btn-pill" onclick="pauseQueueTask('${t.id}')">⏸ Pause</button>` : ''}
                                 <button class="btn-pill danger" onclick="removeQueueTask('${t.id}')">×</button>

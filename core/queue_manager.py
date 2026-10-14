@@ -18,6 +18,7 @@ class TaskState(str, Enum):
     DOWNLOADING = "downloading"
     PAUSED = "paused"
     COMPLETED = "completed"
+    SKIPPED = "skipped"
     ERROR = "error"
     CANCELLED = "cancelled"
 
@@ -35,7 +36,13 @@ class DownloadTask:
         trim_end: Optional[str] = None,
         sponsorblock: bool = False,
         embed_subs: bool = False,
-        speed_limit: Optional[str] = None
+        speed_limit: Optional[str] = None,
+        playlist_id: Optional[str] = None,
+        playlist_title: Optional[str] = None,
+        playlist_index: Optional[int] = None,
+        playlist_total: Optional[int] = None,
+        prefix_index: bool = False,
+        skip_if_exists: bool = True
     ):
         self.id = str(uuid.uuid4())[:8]
         self.url = url
@@ -49,6 +56,12 @@ class DownloadTask:
         self.sponsorblock = sponsorblock
         self.embed_subs = embed_subs
         self.speed_limit = speed_limit
+        self.playlist_id = playlist_id
+        self.playlist_title = playlist_title
+        self.playlist_index = playlist_index
+        self.playlist_total = playlist_total
+        self.prefix_index = prefix_index
+        self.skip_if_exists = skip_if_exists
         self.state = TaskState.QUEUED
         self.percent = 0.0
         self.speed = "--"
@@ -59,6 +72,12 @@ class DownloadTask:
         self.error: Optional[str] = None
         self.engine: Optional[DownloaderEngine] = None
         self.created_at = time.time()
+
+    @property
+    def playlist_progress_str(self) -> Optional[str]:
+        if self.playlist_index and self.playlist_total:
+            return f"{self.playlist_index} of {self.playlist_total}"
+        return None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -79,7 +98,12 @@ class DownloadTask:
             "eta": self.eta,
             "filename": self.filename,
             "file_path": self.file_path,
-            "error": self.error
+            "error": self.error,
+            "playlist_id": self.playlist_id,
+            "playlist_title": self.playlist_title,
+            "playlist_index": self.playlist_index,
+            "playlist_total": self.playlist_total,
+            "playlist_progress_str": f"{self.playlist_index} of {self.playlist_total}" if (self.playlist_index and self.playlist_total) else None
         }
 
 
@@ -107,13 +131,22 @@ class QueueManager:
         trim_end: Optional[str] = None,
         sponsorblock: bool = False,
         embed_subs: bool = False,
-        speed_limit: Optional[str] = None
+        speed_limit: Optional[str] = None,
+        playlist_id: Optional[str] = None,
+        playlist_title: Optional[str] = None,
+        playlist_index: Optional[int] = None,
+        playlist_total: Optional[int] = None,
+        prefix_index: bool = False,
+        skip_if_exists: bool = True
     ) -> DownloadTask:
         task = DownloadTask(
             url, mode, quality, container, output_dir, title,
             trim_start=trim_start, trim_end=trim_end,
             sponsorblock=sponsorblock, embed_subs=embed_subs,
-            speed_limit=speed_limit
+            speed_limit=speed_limit,
+            playlist_id=playlist_id, playlist_title=playlist_title,
+            playlist_index=playlist_index, playlist_total=playlist_total,
+            prefix_index=prefix_index, skip_if_exists=skip_if_exists
         )
         with self._lock:
             self.tasks.append(task)
@@ -239,14 +272,20 @@ class QueueManager:
                     sponsorblock=task_to_run.sponsorblock,
                     embed_subs=task_to_run.embed_subs,
                     speed_limit=task_to_run.speed_limit,
+                    playlist_index=task_to_run.playlist_index,
+                    playlist_total=task_to_run.playlist_total,
+                    prefix_index=task_to_run.prefix_index,
+                    skip_if_exists=task_to_run.skip_if_exists,
                     progress_callback=progress_cb
                 )
-
 
                 with self._lock:
                     if task_to_run.state == TaskState.PAUSED:
                         # Left in paused state
                         pass
+                    elif res.get("skipped") and res.get("is_unavailable"):
+                        task_to_run.state = TaskState.SKIPPED
+                        task_to_run.error = res.get("error", "Video is private or unavailable.")
                     elif res.get("success"):
                         task_to_run.state = TaskState.COMPLETED
                         task_to_run.file_path = res.get("file_path")

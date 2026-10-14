@@ -67,7 +67,7 @@ def test_arabic_translation_quality():
     allowed_latin = {
         "youtube", "mediapulse", "pro", "mp3", "mp4", "4k", "2k", "1080p", "720p", "320k",
         "ffmpeg", "sponsorblock", "short", "reels", "hh", "mm", "ss", "url", "http", "https",
-        "socks5", "k", "p"
+        "socks5", "k", "p", "index", "total"
     }
 
     arabic_char_re = re.compile(r'[\u0600-\u06FF]')
@@ -80,7 +80,9 @@ def test_arabic_translation_quality():
         assert arabic_char_re.search(text), f"Key '{k}' in ar.json does not contain Arabic text: '{text}'"
 
         # Check Latin words (tokens containing letters)
-        tokens = token_re.findall(text)
+        # Strip {var} format placeholders before token validation
+        clean_text = re.sub(r'\{[a-zA-Z0-9_]+\}', '', text)
+        tokens = token_re.findall(clean_text)
         for token in tokens:
             if any(c.isalpha() for c in token):
                 assert token.lower() in allowed_latin, f"Unexpected English word '{token}' in Arabic translation for key '{k}': '{text}'"

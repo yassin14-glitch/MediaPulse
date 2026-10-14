@@ -21,7 +21,7 @@ A high-performance, hardened, privacy-focused multimedia video and audio downloa
 - **High-Definition Video**: Download in 4K Ultra HD (2160p), 2K QHD (1440p), 1080p 60fps Full HD, and 720p HD.
 - **Studio Audio Extraction**: One-click pure audio conversion to 320kbps MP3, M4A, WAV, FLAC, and OPUS.
 - **Pre-Download Link Preview**: High-resolution thumbnail, channel badges, view counts, and duration metadata preview.
-- **Playlists & Shorts**: Full playlist detection with sequential extraction or single video selection.
+- **Full YouTube Playlist Engine**: Instant flat-mode extraction without freezing UI; scrollable checklist with thumbnails, durations, and channels; Select All / Select None controls; custom range selector (e.g. `1-10` or `5,8,12`); single-video-in-playlist prompt; subfolder creation; optional position index prefixing (`01 - Title`); skipping existing files to resume interrupted playlists; and skipping private/deleted/region-blocked videos with clean short alerts.
 - **Subtitles & Metadata**: Embed subtitles (`all`, `en`, `ar`, etc.) and album art/chapters directly into media containers.
 - **SponsorBlock Integration**: Automatically detect and skip sponsored segments, intros, and promotional fillers.
 - **Video Trimmer**: Extract only a specific time range (`start_time` - `end_time`) with frame accuracy without downloading entire streams.
@@ -118,6 +118,8 @@ pytest tests -v
 ### Coverage Highlights:
 | Test Scenario | Module | Status |
 | :--- | :--- | :--- |
+| **YouTube Playlist (Flat, Range, Resume, Skip)** | `tests/test_playlist.py` | ✅ PASSED |
+| **Single Video in Playlist Detection & Choice** | `tests/test_playlist.py` | ✅ PASSED |
 | **URL Validation & Normalization** | `tests/test_url_and_metadata.py` | ✅ PASSED |
 | **Instagram Reels & Cookies** | `tests/test_url_and_metadata.py` | ✅ PASSED |
 | **All 12 Languages & Key Parity** | `tests/test_i18n.py` | ✅ PASSED |

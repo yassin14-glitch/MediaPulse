@@ -6,7 +6,7 @@ import sys
 import threading
 import time
 from typing import Any, Callable, Dict, List, Optional
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 import yt_dlp
 from core.errors import map_error_to_human_message
@@ -35,6 +35,75 @@ def normalize_video_url(url: str) -> str:
         except Exception:
             pass
     return url
+
+
+def check_playlist_url(url: str) -> Dict[str, Any]:
+    """Analyzes a URL to see if it contains a YouTube playlist, single video with playlist, or pure video."""
+    result = {
+        "is_youtube": False,
+        "has_playlist": False,
+        "has_video": False,
+        "is_single_and_playlist": False,
+        "is_pure_playlist": False,
+        "video_id": None,
+        "playlist_id": None,
+        "single_url": None,
+        "playlist_url": None
+    }
+    if not url or not str(url).strip():
+        return result
+
+    raw_url = str(url).strip()
+    try:
+        parsed = urlparse(raw_url)
+        netloc = parsed.netloc.lower()
+        if not ("youtube.com" in netloc or "youtu.be" in netloc):
+            return result
+
+        result["is_youtube"] = True
+        qs = parse_qs(parsed.query)
+
+        playlist_id = None
+        if "list" in qs and qs["list"]:
+            playlist_id = qs["list"][0]
+
+        video_id = None
+        if "youtu.be" in netloc:
+            path_parts = [p for p in parsed.path.split("/") if p]
+            if path_parts:
+                video_id = path_parts[0]
+        elif "youtube.com" in netloc:
+            if "v" in qs and qs["v"]:
+                video_id = qs["v"][0]
+            elif "/embed/" in parsed.path:
+                path_parts = [p for p in parsed.path.split("/embed/") if p]
+                if path_parts:
+                    video_id = path_parts[0].split("/")[0]
+            elif "/v/" in parsed.path:
+                path_parts = [p for p in parsed.path.split("/v/") if p]
+                if path_parts:
+                    video_id = path_parts[0].split("/")[0]
+            elif "/shorts/" in parsed.path:
+                path_parts = [p for p in parsed.path.split("/shorts/") if p]
+                if path_parts:
+                    video_id = path_parts[0].split("/")[0]
+
+        result["video_id"] = video_id
+        result["playlist_id"] = playlist_id
+        result["has_video"] = bool(video_id)
+        result["has_playlist"] = bool(playlist_id)
+        result["is_single_and_playlist"] = bool(video_id and playlist_id)
+        result["is_pure_playlist"] = bool(playlist_id and not video_id)
+
+        if video_id:
+            result["single_url"] = f"https://www.youtube.com/watch?v={video_id}"
+        if playlist_id:
+            result["playlist_url"] = f"https://www.youtube.com/playlist?list={playlist_id}"
+
+        return result
+    except Exception as e:
+        logger.debug(f"Error checking playlist URL {url}: {e}")
+        return result
 
 
 def parse_time_to_seconds(time_str: Optional[str]) -> Optional[int]:
@@ -301,6 +370,129 @@ class DownloaderEngine:
         log_exception(f"Error fetching info for URL '{url}'", last_error)
         raise RuntimeError(human_msg)
 
+    def fetch_playlist_info(self, url: str) -> Dict[str, Any]:
+        """Fetches flat playlist metadata quickly without downloading or deep video format resolution."""
+        if not url or not url.strip():
+            raise RuntimeError("No URL provided for playlist.")
+
+        chk = check_playlist_url(url)
+        playlist_url = chk["playlist_url"] if chk["has_playlist"] else url
+
+        ffmpeg_path = FFmpegManager.get_ffmpeg_path()
+        base_ydl_opts: Dict[str, Any] = {
+            "quiet": True,
+            "no_warnings": True,
+            "skip_download": True,
+            "extract_flat": "in_playlist",
+            "ignoreerrors": True,
+            "http_headers": {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                "Accept": "*/*",
+                "Accept-Language": "en-US,en;q=0.9",
+            },
+        }
+        if ffmpeg_path:
+            base_ydl_opts["ffmpeg_location"] = ffmpeg_path
+
+        candidate_browsers = self.get_candidate_browsers()
+        attempts = []
+        if self._cached_working_browser:
+            attempts.append(self._cached_working_browser)
+        attempts.append(None)
+        if candidate_browsers:
+            for b in candidate_browsers:
+                if b not in attempts:
+                    attempts.append(b)
+
+        last_error = None
+        raw_info = None
+
+        for b in attempts:
+            try:
+                opts = dict(base_ydl_opts)
+                if b:
+                    opts["cookiesfrombrowser"] = (b,)
+                    opts.pop("http_headers", None)
+                with yt_dlp.YoutubeDL(opts) as ydl:
+                    raw_info = ydl.extract_info(playlist_url, download=False)
+                    if raw_info:
+                        if b:
+                            DownloaderEngine._cached_working_browser = b
+                        break
+            except Exception as e:
+                last_error = e
+
+        if not raw_info:
+            human_msg = map_error_to_human_message(last_error) if last_error else "Could not load playlist."
+            raise RuntimeError(human_msg)
+
+        playlist_title = raw_info.get("title") or "YouTube Playlist"
+        playlist_id = raw_info.get("id") or chk.get("playlist_id") or ""
+        uploader = raw_info.get("uploader") or raw_info.get("channel") or "Unknown Creator"
+
+        raw_entries = raw_info.get("entries")
+        if raw_entries is None:
+            raw_entries = []
+        elif hasattr(raw_entries, "__iter__") and not isinstance(raw_entries, list):
+            try:
+                raw_entries = list(raw_entries)
+            except Exception:
+                raw_entries = []
+
+        formatted_entries: List[Dict[str, Any]] = []
+        idx = 1
+        for entry in raw_entries:
+            if not entry:
+                continue
+
+            vid_id = entry.get("id") or ""
+            title = entry.get("title") or f"Video {idx}"
+            duration = entry.get("duration")
+
+            # Check for unavailable, private or deleted video
+            title_lower = title.lower()
+            is_unavailable = (
+                title in ["[Private video]", "[Deleted video]", "[Blocked video]"]
+                or "private video" in title_lower
+                or "deleted video" in title_lower
+                or entry.get("availability") in ["private", "subscriber_only", "needs_auth"]
+                or not vid_id
+            )
+
+            # Determine thumbnail
+            thumb_url = ""
+            if vid_id:
+                thumb_url = f"https://i.ytimg.com/vi/{vid_id}/mqdefault.jpg"
+            elif entry.get("thumbnails"):
+                thumb_url = entry["thumbnails"][-1].get("url", "")
+            elif entry.get("thumbnail"):
+                thumb_url = entry["thumbnail"]
+
+            duration_str = self.format_eta(duration) if duration else "--:--"
+
+            formatted_entries.append({
+                "index": idx,
+                "id": vid_id,
+                "title": title,
+                "duration": duration or 0,
+                "duration_str": duration_str,
+                "uploader": entry.get("uploader") or entry.get("channel") or uploader,
+                "thumbnail": thumb_url,
+                "url": f"https://www.youtube.com/watch?v={vid_id}" if vid_id else entry.get("url", ""),
+                "is_available": not is_unavailable
+            })
+            idx += 1
+
+        return {
+            "is_playlist": True,
+            "playlist_id": playlist_id,
+            "title": playlist_title,
+            "uploader": uploader,
+            "count": len(formatted_entries),
+            "is_empty": len(formatted_entries) == 0,
+            "entries": formatted_entries
+        }
+
     def download(
         self,
         url: str,
@@ -319,6 +511,10 @@ class DownloaderEngine:
         trim_end: Optional[str] = None,
         playlist_items: Optional[str] = None,
         download_playlist: bool = False,
+        playlist_index: Optional[int] = None,
+        playlist_total: Optional[int] = None,
+        prefix_index: bool = False,
+        skip_if_exists: bool = True,
         progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None
     ) -> Dict[str, Any]:
         """Downloads the video/audio with progress feedback, cancellation support, and write safety."""
@@ -365,6 +561,59 @@ class DownloaderEngine:
                 "url": url,
                 "error": human_err
             }
+
+        # Check if already downloaded (for resuming stopped playlists)
+        if skip_if_exists and os.path.isdir(output_dir):
+            try:
+                extracted_id = None
+                parsed_chk = check_playlist_url(url)
+                if parsed_chk.get("video_id"):
+                    extracted_id = parsed_chk["video_id"]
+                elif "v=" in url:
+                    extracted_id = url.split("v=")[1].split("&")[0]
+
+                for fname in os.listdir(output_dir):
+                    fpath = os.path.join(output_dir, fname)
+                    if not os.path.isfile(fpath):
+                        continue
+                    if fpath.endswith(".part") or fpath.endswith(".ytdl"):
+                        continue
+                    if os.path.getsize(fpath) <= 1024:
+                        continue
+
+                    match = False
+                    if prefix_index and playlist_index is not None:
+                        prefix_pat = f"{playlist_index:02d} - "
+                        if fname.startswith(prefix_pat):
+                            match = True
+
+                    if extracted_id and f"[{extracted_id}]" in fname:
+                        match = True
+
+                    if match:
+                        fsize_str = self.format_bytes(os.path.getsize(fpath))
+                        logger.info(f"Skipping already downloaded video: {fpath} ({fsize_str})")
+                        if progress_callback:
+                            progress_callback({
+                                "status": "completed",
+                                "percent": 100.0,
+                                "file_path": fpath,
+                                "size_str": fsize_str,
+                                "message": "Already downloaded (skipped)"
+                            })
+                        return {
+                            "success": True,
+                            "skipped": True,
+                            "title": fname,
+                            "file_path": fpath,
+                            "file_size": fsize_str,
+                            "format": f"{quality} ({container})",
+                            "thumbnail": "",
+                            "url": url,
+                            "error": None
+                        }
+            except Exception as e:
+                logger.debug(f"Error checking existing file: {e}")
 
         ffmpeg_path = FFmpegManager.get_ffmpeg_path()
         last_hook_time = [0.0]
@@ -430,7 +679,10 @@ class DownloaderEngine:
                     })
 
         # Template formatting
-        tmpl = filename_template if filename_template and filename_template.strip() else "%(title).160B [%(id)s].%(ext)s"
+        default_tmpl = "%(title).160B [%(id)s].%(ext)s"
+        if prefix_index and playlist_index is not None:
+            default_tmpl = f"{playlist_index:02d} - %(title).160B [%(id)s].%(ext)s"
+        tmpl = filename_template if filename_template and filename_template.strip() else default_tmpl
         if "%(ext)s" not in tmpl:
             tmpl += ".%(ext)s"
 
@@ -642,7 +894,35 @@ class DownloaderEngine:
                 "error": "Download was cancelled."
             }
         except Exception as e:
+            err_str = str(e).lower()
+            is_unavailable = any(term in err_str for term in [
+                "private video", "is private", "deleted video", "has been deleted",
+                "video unavailable", "has been removed", "sign in to confirm your age",
+                "not available in your country", "blocked", "terms of service", "in your region"
+            ])
             human_msg = map_error_to_human_message(e)
+            if is_unavailable:
+                human_msg = "Skipped: Video is private, deleted, or unavailable."
+                logger.warning(f"Skipping unavailable video in playlist: {url} - {human_msg}")
+                if progress_callback:
+                    progress_callback({
+                        "status": "error",
+                        "percent": 0.0,
+                        "message": human_msg
+                    })
+                return {
+                    "success": False,
+                    "skipped": True,
+                    "is_unavailable": True,
+                    "title": "Unavailable Video",
+                    "file_path": None,
+                    "file_size": "0 B",
+                    "format": "",
+                    "thumbnail": "",
+                    "url": url,
+                    "error": human_msg
+                }
+
             log_exception(f"Download error on URL: {url}", e)
             if progress_callback:
                 progress_callback({
@@ -652,6 +932,8 @@ class DownloaderEngine:
                 })
             return {
                 "success": False,
+                "skipped": False,
+                "is_unavailable": False,
                 "title": "",
                 "file_path": None,
                 "file_size": "0 B",

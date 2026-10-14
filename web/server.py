@@ -1,6 +1,7 @@
 """FastAPI Web Server for the Universal Video Downloader with Queue, i18n, and Updater support."""
 import json
 import os
+import re
 import sys
 import threading
 from typing import Any, Dict, List, Optional
@@ -21,6 +22,7 @@ from pydantic import BaseModel
 
 from core.downloader_engine import (
     DownloaderEngine,
+    check_playlist_url,
     get_browser_cookies_setting,
     get_installed_browsers,
     normalize_video_url,
@@ -167,6 +169,24 @@ class BatchAddRequest(BaseModel):
     quality: str = "best"
     container: str = "mp4"
     output_dir: Optional[str] = None
+
+
+class PlaylistQueueItem(BaseModel):
+    url: str
+    title: str
+    index: int
+
+
+class PlaylistQueueAddRequest(BaseModel):
+    playlist_id: Optional[str] = None
+    playlist_title: str
+    items: List[PlaylistQueueItem]
+    mode: str = "video"
+    quality: str = "best"
+    container: str = "mp4"
+    output_dir: Optional[str] = None
+    create_subfolder: bool = True
+    prefix_index: bool = True
 
 
 class QueueReorderRequest(BaseModel):
@@ -431,6 +451,23 @@ def get_youtube_info(req: FetchInfoRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@app.post("/api/youtube/check-url")
+def check_url_endpoint(req: FetchInfoRequest):
+    return check_playlist_url(req.url)
+
+
+@app.post("/api/youtube/playlist-info")
+def get_playlist_info_endpoint(req: FetchInfoRequest):
+    if not req.url:
+        raise HTTPException(status_code=400, detail="No URL provided for playlist.")
+    downloader = DownloaderEngine()
+    try:
+        info = downloader.fetch_playlist_info(req.url)
+        return info
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 
 @app.post("/api/web/extract")
 def extract_web_streams(req: FetchInfoRequest):
@@ -595,6 +632,46 @@ def batch_add_to_queue(req: BatchAddRequest):
         )
         added.append(task.to_dict())
     return {"success": True, "count": len(added), "tasks": added}
+
+
+@app.post("/api/queue/add-playlist")
+def add_playlist_to_queue(req: PlaylistQueueAddRequest):
+    global current_download_dir
+    base_dir = req.output_dir or current_download_dir
+    if req.create_subfolder:
+        safe_name = re.sub(r'[\\/*?:"<>|]', "", req.playlist_title).strip() or "Playlist"
+        target_dir = os.path.join(base_dir, safe_name)
+    else:
+        target_dir = base_dir
+
+    os.makedirs(target_dir, exist_ok=True)
+    total_items = len(req.items)
+    added = []
+
+    for item in req.items:
+        task = queue_mgr.add_task(
+            url=item.url,
+            mode=req.mode,
+            quality=req.quality,
+            container=req.container,
+            output_dir=target_dir,
+            title=item.title,
+            playlist_id=req.playlist_id,
+            playlist_title=req.playlist_title,
+            playlist_index=item.index,
+            playlist_total=total_items,
+            prefix_index=req.prefix_index,
+            skip_if_exists=True
+        )
+        added.append(task.to_dict())
+
+    return {
+        "success": True,
+        "count": len(added),
+        "playlist_title": req.playlist_title,
+        "output_dir": target_dir,
+        "tasks": added
+    }
 
 
 @app.post("/api/queue/reorder")
